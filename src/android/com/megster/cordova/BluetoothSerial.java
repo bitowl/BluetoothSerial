@@ -33,7 +33,7 @@ public class BluetoothSerial extends CordovaPlugin {
 
 
 
-    private class ConnectionContext{
+    private class ConnectionContext {
 
         // callbacks
         public CallbackContext connectCallback;
@@ -48,8 +48,7 @@ public class BluetoothSerial extends CordovaPlugin {
         private String delimiter;
 
 
-        public ConnectionContext()
-        {
+        public ConnectionContext() {
             bluetoothSerialService = new BluetoothSerialService(mHandler);
         }
 
@@ -131,7 +130,7 @@ public class BluetoothSerial extends CordovaPlugin {
                         break;
                     case MESSAGE_STATE_CHANGE:
 
-                        if(D) Log.i(TAG, "MESSAGE_STATE_CHANGE: " + msg.arg1);
+                        if (D) Log.i(TAG, "MESSAGE_STATE_CHANGE: " + msg.arg1);
                         switch (msg.arg1) {
                             case BluetoothSerialService.STATE_CONNECTED:
                                 Log.i(TAG, "BluetoothSerialService.STATE_CONNECTED");
@@ -198,7 +197,7 @@ public class BluetoothSerial extends CordovaPlugin {
 
     private BluetoothAdapter bluetoothAdapter;
     private HashMap<String,ConnectionContext> connections = new HashMap<String, ConnectionContext>();
-    String defaultMac="";
+    private String defaultMac = "";
     private BluetoothSerialService bluetoothSerialService;
 
     // Debugging
@@ -217,7 +216,7 @@ public class BluetoothSerial extends CordovaPlugin {
     public static final String DEVICE_NAME = "device_name";
     public static final String TOAST = "toast";
 
-    StringBuffer buffer = new StringBuffer();
+    private StringBuffer buffer = new StringBuffer();
     private String delimiter;
     private static final int REQUEST_ENABLE_BLUETOOTH = 1;
 
@@ -235,15 +234,12 @@ public class BluetoothSerial extends CordovaPlugin {
             bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         }
 
-        ConnectionContext cc=null;
+        ConnectionContext cc = null;
 
-        if(!defaultMac.isEmpty())
-        {
-            cc=connections.get(defaultMac);
-        }
-        else
-        {
-            //prevent crash if no connect has been called
+        if (!defaultMac.isEmpty()) {
+            cc = connections.get(defaultMac);
+        } else {
+            // prevent crash if no connect has been called
             cc = new ConnectionContext();
         }
 
@@ -269,91 +265,79 @@ public class BluetoothSerial extends CordovaPlugin {
             connect(args, secure, callbackContext);
 
         } else if (action.equals(DISCONNECT)) {
-            if(!args.isNull(0))
-            {
-                cc=connections.get(args.getString(0));
-                if(cc==null)
-                {
-                    callbackContext.error("Address " + args.getString(0)+" never used before");
+            if (!args.isNull(0)) {
+                cc = connections.get(args.getString(0));
+                if (cc == null) {
+                    callbackContext.error("Address " + args.getString(0) + " never used before");
                 }
             }
-            if(cc!=null)
-            {
+            if (cc != null) {
                 cc.connectCallback = null;
                 cc.bluetoothSerialService.stop();
                 callbackContext.success();
             }
 
         } else if (action.equals(WRITE)) {
-            if(!args.isNull(1))
-            {
-                cc=connections.get(args.getString(1));
-                if(cc==null)
-                {
-                    callbackContext.error("Address " + args.getString(0)+" never used before");
+            if (!args.isNull(1)) {
+                cc = connections.get(args.getString(1));
+                if (cc == null) {
+                    callbackContext.error("Address " + args.getString(0) + " never used before");
                 }
             }
 
-            if(cc!=null) {
+            if (cc != null) {
                 byte[] data = args.getArrayBuffer(0);
                 cc.bluetoothSerialService.write(data);
                 callbackContext.success();
             }
 
         } else if (action.equals(AVAILABLE)) {
-            if(!args.isNull(0))
-            {
-                cc=connections.get(args.getString(0));
-                if(cc==null)
-                {
-                    callbackContext.error("Address " + args.getString(0)+" never used before");
+            if (!args.isNull(0)) {
+                cc = connections.get(args.getString(0));
+                if (cc == null) {
+                    callbackContext.error("Address " + args.getString(0) + " never used before");
                 }
             }
 
-            if(cc!=null) {
+            if (cc != null) {
                 callbackContext.success(cc.available());
             }
 
         } else if (action.equals(READ)) {
-            if(!args.isNull(0))
-            {
-                cc=connections.get(args.getString(0));
-                if(cc==null)
-                {
-                    callbackContext.error("Address " + args.getString(0)+" never used before");
+            if (!args.isNull(0)) {
+                cc = connections.get(args.getString(0));
+                if (cc == null) {
+                    callbackContext.error("Address " + args.getString(0) + " never used before");
                 }
             }
 
-            if(cc!=null) {
+            if (cc != null) {
                 callbackContext.success(cc.read());
             }
 
         } else if (action.equals(READ_UNTIL)) {
-            if(!args.isNull(1))
-            {
-                cc=connections.get(args.getString(1));
-                if(cc==null)
-                {
-                    callbackContext.error("Address " + args.getString(0)+" never used before");
+            if (!args.isNull(1)) {
+                cc = connections.get(args.getString(1));
+                if (cc == null) {
+                    callbackContext.error("Address " + args.getString(0) + " never used before");
                 }
             }
 
-            if(cc!=null) {
+            if (cc != null) {
                 String interesting = args.getString(0);
                 callbackContext.success(cc.readUntil(interesting));
             }
 
         } else if (action.equals(SUBSCRIBE)) {
-            if(!args.isNull(1))
-            {
-                cc=connections.get(args.getString(1));
-                if(cc==null)
+            if (!args.isNull(1)) {
+                cc = connections.get(args.getString(1));
+                if (cc == null)
                 {
-                    callbackContext.error("Address " + args.getString(0)+" never used before");
+                    callbackContext.error("Address " + args.getString(0) + " never used before");
                 }
             }
 
-            if(cc!=null) {
+            if (cc != null) {
                 cc.delimiter = args.getString(0);
                 cc.dataAvailableCallback = callbackContext;
 
@@ -363,16 +347,14 @@ public class BluetoothSerial extends CordovaPlugin {
             }
 
         } else if (action.equals(UNSUBSCRIBE)) {
-            if(!args.isNull(0))
-            {
-                cc=connections.get(args.getString(0));
-                if(cc==null)
-                {
-                    callbackContext.error("Address " + args.getString(0)+" never used before");
+            if (!args.isNull(0)) {
+                cc = connections.get(args.getString(0));
+                if (cc == null) {
+                    callbackContext.error("Address " + args.getString(0) + " never used before");
                 }
             }
 
-            if(cc!=null) {
+            if (cc != null) {
                 cc.delimiter = null;
 
                 // send no result, so Cordova won't hold onto the data available callback anymore
@@ -384,16 +366,14 @@ public class BluetoothSerial extends CordovaPlugin {
             }
 
         } else if (action.equals(SUBSCRIBE_RAW)) {
-            if(!args.isNull(0))
-            {
-                cc=connections.get(args.getString(0));
-                if(cc==null)
-                {
-                    callbackContext.error("Address " + args.getString(0)+" never used before");
+            if (!args.isNull(0)) {
+                cc = connections.get(args.getString(0));
+                if (cc == null) {
+                    callbackContext.error("Address " + args.getString(0) + " never used before");
                 }
             }
 
-            if(cc!=null) {
+            if (cc != null) {
                 cc.rawDataAvailableCallback = callbackContext;
 
                 PluginResult result = new PluginResult(PluginResult.Status.NO_RESULT);
@@ -402,16 +382,14 @@ public class BluetoothSerial extends CordovaPlugin {
             }
 
         } else if (action.equals(UNSUBSCRIBE_RAW)) {
-            if(!args.isNull(0))
-            {
-                cc=connections.get(args.getString(0));
-                if(cc==null)
-                {
-                    callbackContext.error("Address " + args.getString(0)+" never used before");
+            if (!args.isNull(0)) {
+                cc = connections.get(args.getString(0));
+                if (cc == null) {
+                    callbackContext.error("Address " + args.getString(0) + " never used before");
                 }
             }
 
-            if(cc!=null) {
+            if (cc != null) {
                 cc.rawDataAvailableCallback = null;
 
                 callbackContext.success();
@@ -426,29 +404,25 @@ public class BluetoothSerial extends CordovaPlugin {
             }
 
         } else if (action.equals(IS_CONNECTED)) {
-            if(!args.isNull(0))
-            {
-                cc=connections.get(args.getString(0));
-
+            if (!args.isNull(0)) {
+                cc = connections.get(args.getString(0));
             }
 
-            if (cc!=null && cc.bluetoothSerialService.getState() == BluetoothSerialService.STATE_CONNECTED) {
+            if (cc != null && cc.bluetoothSerialService.getState() == BluetoothSerialService.STATE_CONNECTED) {
                 callbackContext.success();
             } else {
                 callbackContext.error("Not connected.");
             }
 
         } else if (action.equals(CLEAR)) {
-            if(!args.isNull(0))
-            {
-                cc=connections.get(args.getString(0));
-                if(cc==null)
-                {
-                    callbackContext.error("Address " + args.getString(0)+" never used before");
+            if (!args.isNull(0)) {
+                cc = connections.get(args.getString(0));
+                if (cc == null) {
+                    callbackContext.error("Address " + args.getString(0) + " never used before");
                 }
             }
 
-            if(cc!=null) {
+            if (cc != null) {
                 cc.buffer.setLength(0);
                 callbackContext.success();
             }
@@ -496,6 +470,7 @@ public class BluetoothSerial extends CordovaPlugin {
             cordova.getActivity().startActivity(discoverIntent);
 
         } else {
+
             validAction = false;
 
         }
@@ -527,8 +502,7 @@ public class BluetoothSerial extends CordovaPlugin {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        for(ConnectionContext conn : connections.values())
-        {
+        for(ConnectionContext conn: connections.values()) {
             conn.bluetoothSerialService.stop();
         }
     }
@@ -537,7 +511,7 @@ public class BluetoothSerial extends CordovaPlugin {
         JSONArray deviceList = new JSONArray();
         Set<BluetoothDevice> bondedDevices = bluetoothAdapter.getBondedDevices();
 
-        for (BluetoothDevice device : bondedDevices) {
+        for (BluetoothDevice device: bondedDevices) {
             deviceList.put(deviceToJSON(device));
         }
         callbackContext.success(deviceList);
@@ -598,7 +572,7 @@ public class BluetoothSerial extends CordovaPlugin {
         if (!connections.containsKey(macAddress)) {
             connections.put(macAddress, new ConnectionContext());
         }
-        ConnectionContext cc=connections.get(macAddress);
+        ConnectionContext cc = connections.get(macAddress);
 
         if (device != null) {
             cc.connectCallback = callbackContext;
@@ -636,7 +610,7 @@ public class BluetoothSerial extends CordovaPlugin {
                     break;
                  case MESSAGE_STATE_CHANGE:
 
-                    if(D) Log.i(TAG, "MESSAGE_STATE_CHANGE: " + msg.arg1);
+                    if (D) Log.i(TAG, "MESSAGE_STATE_CHANGE: " + msg.arg1);
                     switch (msg.arg1) {
                         case BluetoothSerialService.STATE_CONNECTED:
                             Log.i(TAG, "BluetoothSerialService.STATE_CONNECTED");
@@ -729,7 +703,7 @@ public class BluetoothSerial extends CordovaPlugin {
                                           int[] grantResults) throws JSONException {
 
         for(int result:grantResults) {
-            if(result == PackageManager.PERMISSION_DENIED) {
+            if (result == PackageManager.PERMISSION_DENIED) {
                 LOG.d(TAG, "User *rejected* location permission");
                 this.permissionCallback.sendPluginResult(new PluginResult(
                         PluginResult.Status.ERROR,
