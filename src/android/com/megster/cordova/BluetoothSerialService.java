@@ -103,10 +103,11 @@ public class BluetoothSerialService {
             mSecureAcceptThread = new AcceptThread(true);
             mSecureAcceptThread.start();
         }
-        if (mInsecureAcceptThread == null) {
+        // I am not using insecure accept thread
+        /*if (mInsecureAcceptThread == null) {
             mInsecureAcceptThread = new AcceptThread(false);
             mInsecureAcceptThread.start();
-        }
+        }*/
     }
 
     /**

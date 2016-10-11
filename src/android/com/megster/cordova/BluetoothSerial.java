@@ -188,17 +188,13 @@ public class BluetoothSerial extends CordovaPlugin {
     private static final String SET_NAME = "setName";
     private static final String SET_DISCOVERABLE = "setDiscoverable";
 
-    // callbacks
-    private CallbackContext connectCallback;
-    private CallbackContext dataAvailableCallback;
-    private CallbackContext rawDataAvailableCallback;
-    private CallbackContext enableBluetoothCallback;
-    private CallbackContext deviceDiscoveredCallback;
-
     private BluetoothAdapter bluetoothAdapter;
     private HashMap<String,ConnectionContext> connections = new HashMap<String, ConnectionContext>();
     private String defaultMac = "";
-    private BluetoothSerialService bluetoothSerialService;
+
+    // callbacks
+    public CallbackContext enableBluetoothCallback;
+    public CallbackContext deviceDiscoveredCallback;
 
     // Debugging
     private static final String TAG = "BluetoothSerial";
@@ -243,8 +239,8 @@ public class BluetoothSerial extends CordovaPlugin {
             cc = new ConnectionContext();
         }
 
-        if (bluetoothSerialService == null) {
-            bluetoothSerialService = new BluetoothSerialService(mHandler);
+        if (cc.bluetoothSerialService == null) {
+            cc.bluetoothSerialService = new BluetoothSerialService(cc.mHandler);
         }
 
         boolean validAction = true;
@@ -341,7 +337,7 @@ public class BluetoothSerial extends CordovaPlugin {
                 cc.delimiter = args.getString(0);
                 cc.dataAvailableCallback = callbackContext;
 
-                bluetoothSerialService.start();
+                cc.bluetoothSerialService.start();
 
                 PluginResult result = new PluginResult(PluginResult.Status.NO_RESULT);
                 result.setKeepCallback(true);
@@ -587,117 +583,6 @@ public class BluetoothSerial extends CordovaPlugin {
         } else {
             callbackContext.error("Could not connect to " + macAddress);
         }
-    }
-
-    // The Handler that gets information back from the BluetoothSerialService
-    // Original code used handler for the because it was talking to the UI.
-    // Consider replacing with normal callbacks
-    private final Handler mHandler = new Handler() {
-
-         public void handleMessage(Message msg) {
-             switch (msg.what) {
-                 case MESSAGE_READ:
-                    buffer.append((String)msg.obj);
-
-                    if (dataAvailableCallback != null) {
-                        sendDataToSubscriber();
-                    }
-
-                    break;
-                 case MESSAGE_READ_RAW:
-                    if (rawDataAvailableCallback != null) {
-                        byte[] bytes = (byte[]) msg.obj;
-                        sendRawDataToSubscriber(bytes);
-                    }
-                    break;
-                 case MESSAGE_STATE_CHANGE:
-
-                    if (D) Log.i(TAG, "MESSAGE_STATE_CHANGE: " + msg.arg1);
-                    switch (msg.arg1) {
-                        case BluetoothSerialService.STATE_CONNECTED:
-                            Log.i(TAG, "BluetoothSerialService.STATE_CONNECTED");
-                            notifyConnectionSuccess();
-                            break;
-                        case BluetoothSerialService.STATE_CONNECTING:
-                            Log.i(TAG, "BluetoothSerialService.STATE_CONNECTING");
-                            break;
-                        case BluetoothSerialService.STATE_LISTEN:
-                            Log.i(TAG, "BluetoothSerialService.STATE_LISTEN");
-                            break;
-                        case BluetoothSerialService.STATE_NONE:
-                            Log.i(TAG, "BluetoothSerialService.STATE_NONE");
-                            break;
-                    }
-                    break;
-                case MESSAGE_WRITE:
-                    //  byte[] writeBuf = (byte[]) msg.obj;
-                    //  String writeMessage = new String(writeBuf);
-                    //  Log.i(TAG, "Wrote: " + writeMessage);
-                    break;
-                case MESSAGE_DEVICE_NAME:
-                    Log.i(TAG, msg.getData().getString(DEVICE_NAME));
-                    break;
-                case MESSAGE_TOAST:
-                    String message = msg.getData().getString(TOAST);
-                    notifyConnectionLost(message);
-                    break;
-             }
-         }
-    };
-
-    private void notifyConnectionLost(String error) {
-        if (connectCallback != null) {
-            connectCallback.error(error);
-            connectCallback = null;
-        }
-    }
-
-    private void notifyConnectionSuccess() {
-        if (connectCallback != null) {
-            PluginResult result = new PluginResult(PluginResult.Status.OK);
-            result.setKeepCallback(true);
-            connectCallback.sendPluginResult(result);
-        }
-    }
-
-    private void sendRawDataToSubscriber(byte[] data) {
-        if (data != null && data.length > 0) {
-            PluginResult result = new PluginResult(PluginResult.Status.OK, data);
-            result.setKeepCallback(true);
-            rawDataAvailableCallback.sendPluginResult(result);
-        }
-    }
-
-    private void sendDataToSubscriber() {
-        String data = readUntil(delimiter);
-        if (data != null && data.length() > 0) {
-            PluginResult result = new PluginResult(PluginResult.Status.OK, data);
-            result.setKeepCallback(true);
-            dataAvailableCallback.sendPluginResult(result);
-
-            sendDataToSubscriber();
-        }
-    }
-
-    private int available() {
-        return buffer.length();
-    }
-
-    private String read() {
-        int length = buffer.length();
-        String data = buffer.substring(0, length);
-        buffer.delete(0, length);
-        return data;
-    }
-
-    private String readUntil(String c) {
-        String data = "";
-        int index = buffer.indexOf(c, 0);
-        if (index > -1) {
-            data = buffer.substring(0, index + c.length());
-            buffer.delete(0, index + c.length());
-        }
-        return data;
     }
 
     @Override

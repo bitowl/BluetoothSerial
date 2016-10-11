@@ -10,7 +10,7 @@ module.exports = {
         cordova.exec(success, failure, "BluetoothSerial", "connectInsecure", [macAddress]);
     },
 
-    disconnect: function (success, failure,macAddress) {
+    disconnect: function (success, failure, macAddress) {
 		macAddress = typeof macAddress !== 'undefined' ? macAddress : null;
         cordova.exec(success, failure, "BluetoothSerial", "disconnect", [macAddress]);
     },
@@ -24,32 +24,32 @@ module.exports = {
         cordova.exec(success, failure, "BluetoothSerial", "isEnabled", []);
     },
 
-    isConnected: function (success, failure,macAddress) {
+    isConnected: function (success, failure, macAddress) {
 		macAddress = typeof macAddress !== 'undefined' ? macAddress : null;
         cordova.exec(success, failure, "BluetoothSerial", "isConnected", [macAddress]);
     },
 
     // the number of bytes of data available to read is passed to the success function
-    available: function (success, failure,macAddress) {
+    available: function (success, failure, macAddress) {
 		macAddress = typeof macAddress !== 'undefined' ? macAddress : null;
         cordova.exec(success, failure, "BluetoothSerial", "available", [macAddress]);
     },
 
     // read all the data in the buffer
-    read: function (success, failure,macAddress) {
+    read: function (success, failure, macAddress) {
 		macAddress = typeof macAddress !== 'undefined' ? macAddress : null;
         cordova.exec(success, failure, "BluetoothSerial", "read", [macAddress]);
     },
 
     // reads the data in the buffer up to and including the delimiter
-    readUntil: function (delimiter, success, failure,macAddress) {
+    readUntil: function (delimiter, success, failure, macAddress) {
 		macAddress = typeof macAddress !== 'undefined' ? macAddress : null;
-        cordova.exec(success, failure, "BluetoothSerial", "readUntil", [delimiter,macAddress]);
+        cordova.exec(success, failure, "BluetoothSerial", "readUntil", [delimiter, macAddress]);
     },
 
     // writes data to the bluetooth serial port
     // data can be an ArrayBuffer, string, integer array, or Uint8Array
-    write: function (data, success, failure,macAddress) {
+    write: function (data, success, failure, macAddress) {
 		macAddress = typeof macAddress !== 'undefined' ? macAddress : null;
 
         // convert to ArrayBuffer
@@ -62,23 +62,23 @@ module.exports = {
             data = data.buffer;
         }
 
-        cordova.exec(success, failure, "BluetoothSerial", "write", [data,macAddress]);
+        cordova.exec(success, failure, "BluetoothSerial", "write", [data, macAddress]);
     },
 
     // calls the success callback when new data is available
-    subscribe: function (delimiter, success, failure,macAddress) {
+    subscribe: function (delimiter, success, failure, macAddress) {
 		macAddress = typeof macAddress !== 'undefined' ? macAddress : null;
-        cordova.exec(success, failure, "BluetoothSerial", "subscribe", [delimiter,macAddress]);
+        cordova.exec(success, failure, "BluetoothSerial", "subscribe", [delimiter, macAddress]);
     },
 
     // removes data subscription
-    unsubscribe: function (success, failure,macAddress) {
+    unsubscribe: function (success, failure, macAddress) {
 		macAddress = typeof macAddress !== 'undefined' ? macAddress : null;
         cordova.exec(success, failure, "BluetoothSerial", "unsubscribe", [macAddress]);
     },
 
     // calls the success callback when new data is available with an ArrayBuffer
-    subscribeRawData: function (success, failure,macAddress) {
+    subscribeRawData: function (success, failure, macAddress) {
 		macAddress = typeof macAddress !== 'undefined' ? macAddress : null;
 
         successWrapper = function(data) {
@@ -95,19 +95,19 @@ module.exports = {
     },
 
     // removes data subscription
-    unsubscribeRawData: function (success, failure,macAddress) {
+    unsubscribeRawData: function (success, failure, macAddress) {
 		macAddress = typeof macAddress !== 'undefined' ? macAddress : null;
         cordova.exec(success, failure, "BluetoothSerial", "unsubscribeRaw", [macAddress]);
     },
 
     // clears the data buffer
-    clear: function (success, failure,macAddress) {
+    clear: function (success, failure, macAddress) {
 		macAddress = typeof macAddress !== 'undefined' ? macAddress : null;
         cordova.exec(success, failure, "BluetoothSerial", "clear", [macAddress]);
     },
 
     // reads the RSSI of the *connected* peripherial
-    readRSSI: function (success, failure,macAddress) {
+    readRSSI: function (success, failure, macAddress) {
 		macAddress = typeof macAddress !== 'undefined' ? macAddress : null;
         cordova.exec(success, failure, "BluetoothSerial", "readRSSI", [macAddress]);
     },
