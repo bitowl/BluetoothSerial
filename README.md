@@ -1,5 +1,8 @@
 # Bluetooth Serial Plugin for PhoneGap
 
+This version is custom tailored for my needs to connect one Android device to the [Connection Machine](https://www.teco.kit.edu/cm/dev/) as well as to another Android device.
+You should use the [original version of this project](https://github.com/don/BluetoothSerial).
+
 This plugin enables serial communication over Bluetooth. It was written for communicating between Android or iOS and an Arduino.
 
 Android and Windows Phone use Classic Bluetooth.  iOS uses Bluetooth Low Energy.

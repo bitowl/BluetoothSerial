@@ -51,7 +51,7 @@ module.exports = {
     // data can be an ArrayBuffer, string, integer array, or Uint8Array
     write: function (data, success, failure, macAddress) {
 		macAddress = typeof macAddress !== 'undefined' ? macAddress : null;
-
+        
         // convert to ArrayBuffer
         if (typeof data === 'string') {
             data = stringToArrayBuffer(data);
@@ -63,6 +63,12 @@ module.exports = {
         }
 
         cordova.exec(success, failure, "BluetoothSerial", "write", [data, macAddress]);
+    },
+
+    // calls the success callback when new data is available
+    subscribeServer: function (delimiter, success, failure, macAddress) {
+        macAddress = typeof macAddress !== 'undefined' ? macAddress : null;
+        cordova.exec(success, failure, "BluetoothSerial", "subscribeServer", [delimiter, macAddress]);
     },
 
     // calls the success callback when new data is available

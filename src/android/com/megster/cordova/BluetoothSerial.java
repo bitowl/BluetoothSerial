@@ -18,7 +18,6 @@ import org.apache.cordova.CordovaArgs;
 import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.PluginResult;
-import org.apache.cordova.LOG;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -174,6 +173,7 @@ public class BluetoothSerial extends CordovaPlugin {
     private static final String READ = "read";
     private static final String READ_UNTIL = "readUntil";
     private static final String SUBSCRIBE = "subscribe";
+    private static final String SUBSCRIBE_SERVER = "subscribeServer";
     private static final String UNSUBSCRIBE = "unsubscribe";
     private static final String SUBSCRIBE_RAW = "subscribeRaw";
     private static final String UNSUBSCRIBE_RAW = "unsubscribeRaw";
@@ -224,7 +224,7 @@ public class BluetoothSerial extends CordovaPlugin {
     @Override
     public boolean execute(String action, CordovaArgs args, CallbackContext callbackContext) throws JSONException {
 
-        LOG.d(TAG, "action = " + action);
+        Log.d(TAG, "action = " + action);
 
         if (bluetoothAdapter == null) {
             bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -235,8 +235,13 @@ public class BluetoothSerial extends CordovaPlugin {
         if (!defaultMac.isEmpty()) {
             cc = connections.get(defaultMac);
         } else {
-            // prevent crash if no connect has been called
-            cc = new ConnectionContext();
+            if (connections.containsKey("server")) {
+                cc = connections.get("server");
+            } else {
+                // prevent crash if no connect has been called
+                cc = new ConnectionContext();
+                connections.put("server", cc);
+            }
         }
 
         if (cc.bluetoothSerialService == null) {
@@ -324,7 +329,7 @@ public class BluetoothSerial extends CordovaPlugin {
                 callbackContext.success(cc.readUntil(interesting));
             }
 
-        } else if (action.equals(SUBSCRIBE)) {
+        } else if (action.equals(SUBSCRIBE_SERVER)) {
             if (!args.isNull(1)) {
                 cc = connections.get(args.getString(1));
                 if (cc == null)
@@ -338,6 +343,24 @@ public class BluetoothSerial extends CordovaPlugin {
                 cc.dataAvailableCallback = callbackContext;
 
                 cc.bluetoothSerialService.start();
+
+                PluginResult result = new PluginResult(PluginResult.Status.NO_RESULT);
+                result.setKeepCallback(true);
+                callbackContext.sendPluginResult(result);
+            }
+
+        }  else if (action.equals(SUBSCRIBE)) {
+            if (!args.isNull(1)) {
+                cc = connections.get(args.getString(1));
+                if (cc == null)
+                {
+                    callbackContext.error("Address " + args.getString(0) + " never used before");
+                }
+            }
+
+            if (cc != null) {
+                cc.delimiter = args.getString(0);
+                cc.dataAvailableCallback = callbackContext;
 
                 PluginResult result = new PluginResult(PluginResult.Status.NO_RESULT);
                 result.setKeepCallback(true);
@@ -568,6 +591,7 @@ public class BluetoothSerial extends CordovaPlugin {
         BluetoothDevice device = bluetoothAdapter.getRemoteDevice(macAddress);
         defaultMac = macAddress;
         if (!connections.containsKey(macAddress)) {
+            Log.d(TAG, "connected: " + macAddress);
             connections.put(macAddress, new ConnectionContext());
         }
         ConnectionContext cc = connections.get(macAddress);

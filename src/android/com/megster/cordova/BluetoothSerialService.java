@@ -144,7 +144,9 @@ public class BluetoothSerialService {
         if (mConnectThread != null) {mConnectThread.cancel(); mConnectThread = null;}
 
         // Cancel any thread currently running a connection
-        if (mConnectedThread != null) {mConnectedThread.cancel(); mConnectedThread = null;}
+        if (mConnectedThread != null) {
+            Log.w(TAG, "There was already a connected thread for this socket.");
+            mConnectedThread.cancel(); mConnectedThread = null;}
 
         // Cancel the accept thread because we only want to connect to one device
         if (mSecureAcceptThread != null) {
@@ -204,11 +206,16 @@ public class BluetoothSerialService {
      * @see ConnectedThread#write(byte[])
      */
     public void write(byte[] out) {
+        Log.e(TAG, "write " + this + " ("+mState);
+
         // Create temporary object
         ConnectedThread r;
         // Synchronize a copy of the ConnectedThread
         synchronized (this) {
-            if (mState != STATE_CONNECTED) return;
+            if (mState != STATE_CONNECTED) {
+                Log.e(TAG, "State is not connected, but " + mState);
+                return;
+            } 
             r = mConnectedThread;
         }
         // Perform the write unsynchronized
@@ -369,24 +376,32 @@ public class BluetoothSerialService {
                 mmSocket.connect();
                 Log.i(TAG,"Connected");
             } catch (IOException e) {
-                Log.e(TAG, e.toString());
+                Log.e(TAG, "Connect failed", e);
 
                 // Some 4.1 devices have problems, try an alternative way to connect
                 // See https://github.com/don/BluetoothSerial/issues/89
                 try {
-                    Log.i(TAG,"Trying fallback...");
-                    mmSocket = (BluetoothSocket) mmDevice.getClass().getMethod("createRfcommSocket", new Class[] {int.class}).invoke(mmDevice,1);
+                    Log.i(TAG,"Trying fallback port 16...");
+                    mmSocket = (BluetoothSocket) mmDevice.getClass().getMethod("createRfcommSocket", new Class[] {int.class}).invoke(mmDevice, 16);
                     mmSocket.connect();
                     Log.i(TAG,"Connected");
                 } catch (Exception e2) {
-                    Log.e(TAG, "Couldn't establish a Bluetooth connection.");
                     try {
-                        mmSocket.close();
-                    } catch (IOException e3) {
-                        Log.e(TAG, "unable to close() " + mSocketType + " socket during connection failure", e3);
+                        Log.i(TAG,"Trying fallback port 1...");
+                        mmSocket = (BluetoothSocket) mmDevice.getClass().getMethod("createRfcommSocket", new Class[] {int.class}).invoke(mmDevice, 1);
+                        mmSocket.connect();
+                        Log.i(TAG,"Connected");
+                    } catch (Exception e3) {
+
+                        Log.e(TAG, "Couldn't establish a Bluetooth connection.", e3);
+                        try {
+                            mmSocket.close();
+                        } catch (IOException e4) {
+                            Log.e(TAG, "unable to close() " + mSocketType + " socket during connection failure", e4);
+                        }
+                        connectionFailed();
+                        return;
                     }
-                    connectionFailed();
-                    return;
                 }
             }
 
@@ -422,14 +437,22 @@ public class BluetoothSerialService {
             mmSocket = socket;
             InputStream tmpIn = null;
             OutputStream tmpOut = null;
+            Log.d(TAG, "connected: "+ socket.isConnected());
 
             // Get the BluetoothSocket input and output streams
             try {
                 tmpIn = socket.getInputStream();
                 tmpOut = socket.getOutputStream();
+                Log.d(TAG, "SerialService: " + BluetoothSerialService.this);
+                Log.d(TAG, "STREAM: " + tmpOut.toString());
+                tmpOut.write("test\n".getBytes());
+                tmpOut.flush();
             } catch (IOException e) {
                 Log.e(TAG, "temp sockets not created", e);
             }
+
+
+
 
             mmInStream = tmpIn;
             mmOutStream = tmpOut;
@@ -473,9 +496,12 @@ public class BluetoothSerialService {
          * @param buffer  The bytes to write
          */
         public void write(byte[] buffer) {
+            Log.d(TAG, "STREAM: " + mmOutStream.toString());
             try {
                 mmOutStream.write(buffer);
 
+                Log.d(TAG, mmSocket.getRemoteDevice().getName());
+                Log.d(TAG, "write: " + new String(buffer));
                 // Share the sent message back to the UI Activity
                 mHandler.obtainMessage(BluetoothSerial.MESSAGE_WRITE, -1, -1, buffer).sendToTarget();
 
